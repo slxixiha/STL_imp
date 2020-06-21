@@ -1,4 +1,5 @@
 //基于数组的栈
+//适用于元素个数大体固定的情况
 
 #include "Stack.h"
 #include <vector>
@@ -58,8 +59,8 @@ T& ArrayStack<T>::top()
     //TODO return null quote
     if( topIndex >= data.size() )
     {
-        cout << "error top, index:" << topIndex << "size:" << data.size() << endl;
-        return data[0];
+        cout << "no element to top" << endl;
+        abort();
     }
 
     return data[topIndex];
@@ -79,8 +80,8 @@ void ArrayStack<T>::pop()
 {
     if(topIndex < 0)
     {
-        cout << "top:" << topIndex << " pop error" << endl;
-        return;
+        cout << "no element to pop" << endl;
+        abort();
     }
 
     topIndex-=1;

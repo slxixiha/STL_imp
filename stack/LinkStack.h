@@ -1,4 +1,5 @@
 //链栈
+//适用于元素个数不确定的情况
 
 #include "Stack.h"
 
@@ -60,6 +61,12 @@ bool LinkStack<T>::empty()
 template<typename T>
 T& LinkStack<T>::top()
 {
+    if(nullptr == topPtr)
+    {
+        cout << "no element to top" << endl;
+        abort(); 
+    }
+
     return topPtr->data;
 }
 
@@ -78,6 +85,12 @@ void LinkStack<T>::push(T element)
 template<typename T>
 void LinkStack<T>::pop()
 {
+    if(nullptr == topPtr)
+    {
+        cout << "no element to pop" << endl;
+        abort();
+    }
+
     StackNodePtr tmp = topPtr->next;
     delete topPtr;
     topPtr = tmp;
