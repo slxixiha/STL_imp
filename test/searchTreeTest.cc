@@ -1,4 +1,4 @@
-#include "searchTree.h"
+#include "../tree/searchTree.h"
 
 #include <vector>
 

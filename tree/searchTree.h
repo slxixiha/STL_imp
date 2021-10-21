@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-// 非平衡
-template<typename T >
+// 非平衡二叉树
+template<typename T>
 class BinarySearchTree {
  public:
   BinarySearchTree();
@@ -16,12 +16,12 @@ class BinarySearchTree {
   }
 
   const T& findMin() const {
-    SearchNode* minNode = findMin(root)
+    SearchNode* minNode = findMin(root);
     return minNode->val;
   }
 
   const T& findMax() const {
-    SearchNode* maxNode = findMax(root)
+    SearchNode* maxNode = findMax(root);
     return maxNode->val;
   }
 
@@ -67,7 +67,11 @@ class BinarySearchTree {
   // 为了改变指针的内容，这里需要传递指针的引用
   void insert(const T& x, SearchNode*& t) const {
     if (!t) {
-      t = new SearchNode(x, nullptr, nullptr);
+      t = new SearchNode;
+      t->val = x;
+      t->left = nullptr;
+      t->right = nullptr;
+      return;
     }
 
     // 先找到位置插入数据
@@ -81,7 +85,7 @@ class BinarySearchTree {
   }
 
   // 如果删除的次数不多，通常使用的策略是懒惰删除（标记删除）
-  void remove(const T& x, SearchNode* t) const {
+  void remove(const T& x, SearchNode* t) {
     if (!t) return;
 
     // 找到要删除的节点
@@ -168,7 +172,7 @@ class BinarySearchTree {
     t = nullptr;
   }
   
-  void printTree(SearchNode* t) {
+  void printTree(SearchNode* t) const {
     // 先序遍历，打印出来就是从小打到的数列
     if (!t) {
       return;
