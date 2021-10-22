@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-// 非平衡二叉树
-template<typename T>
+// 非平衡
+template<typename T >
 class BinarySearchTree {
  public:
-  BinarySearchTree();
+  BinarySearchTree() : root(nullptr) {};
   BinarySearchTree(const BinarySearchTree& rhs) {
     root = clone(rhs.root);
   }
@@ -123,11 +123,14 @@ class BinarySearchTree {
     return findMin(t->left);
   }
   
-  T removeMin(SearchNode* t) {
+  T removeMin(SearchNode*& t) {
     // TODO: 为空抛异常？
 
     if (!(t->left)) {
-      return t->val;
+      T tmp = t->val;
+      delete t;
+      t = nullptr;
+      return tmp;
     }
   
     return removeMin(t->left);
