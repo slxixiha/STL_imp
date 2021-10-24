@@ -99,7 +99,7 @@ class BinarySearchTree {
     if (t->left && t->right) {
       // 节点的指向不用变，只需要更改节点的值
       //删除最小节点，最小节点一定只有右子树
-      t->val = removeMin(t);
+      t->val = removeMin(t->right);
     } else {
       // 使用非空节点代替
       SearchNode* oldNode = t;
@@ -128,8 +128,15 @@ class BinarySearchTree {
 
     if (!(t->left)) {
       T tmp = t->val;
-      delete t;
-      t = nullptr;
+      if (t->right) {
+        t->val = t->right->val;
+        delete t->right;
+        t->right = nullptr;
+      } else {
+        delete t;
+        t = nullptr;
+      }
+
       return tmp;
     }
   

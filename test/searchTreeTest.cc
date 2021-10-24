@@ -37,9 +37,12 @@ int main(void) {
   cout << "after remove 3, print tree:";
   searchTree.printTree();
 
+#if 0
+  // 没定找不到时怎么返回
   searchTree.remove(6);
   cout << "after remove invalid 6, print tree:";
   searchTree.printTree();
+#endif
 
   BinarySearchTree<int> searchTree_bak = searchTree;
   cout << "print bak tree:";
