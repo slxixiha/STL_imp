@@ -1,6 +1,11 @@
-#include "tree.h"
-
 #include <iostream>
+
+template <typename T>
+struct BinaryNode {
+  T val;
+  BinaryNode* left;
+  BinaryNode* right;
+};
 
 // 非平衡
 template<typename T >

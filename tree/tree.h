@@ -10,14 +10,6 @@ struct TreeNode {
   TreeNode* nextSibling;
 };
 
-template <typename T>
-struct BinaryNode {
-  T val;
-  BinaryNode* left;
-  BinaryNode* right;
-};
-
-
 #endif
 
 
