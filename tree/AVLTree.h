@@ -13,42 +13,80 @@ struct AVLNode {
 template <typename T>
 class AVLTree {
  public:
-  void insert(T& x) {
-    insert(x, root);
+  using node = AVLNode<T>;
+
+  AVLTree() : root(nullptr) {};
+  AVLTree(const AVLTree& rhs) {
+    root = clone(rhs.root);
+  }
+  const AVLTree& operator= (const AVLTree& rhs) {
+    if (this != rhs) {
+      makeEmpty(root);
+      root = clone(rhs.root);
+      return *this;
+    }
   }
 
-  void remove(T& x) {
+  ~AVLTree() {
+    makeEmpty(root);
+  }
+
+  const T& findMin() const {
+    node* minNode = findMin(root);
+    return minNode->val;
+  }
+
+  const T& findMax() const {
+    node* maxNode = findMax(root);
+    return maxNode->val;
+  }
+
+  const node* insert(const T& x) {
+    return insert(x, root);
+  }
+
+  void remove(const T& x) {
     remove(x, root);
   }
 
+  bool isEmpty() const {
+    return !root;
+  }
+
+  void makeEmpty() {
+    return makeEmpty(root);
+  }
+
+  bool contains(const T& x) const {
+    return contains(x, root);
+  }
+
+  void printTree() const {
+    printTree(root);
+    std::cout << std::endl;
+  }
+
  private:
-  int height(AVLNode* t) const {
-    return (!t) ? 0 : t->height;
+  int height(node* t) const {
+    return (!t) ? -1 : t->height;
   }
 
-  int getHeight(AVLNode* t) const {
-    if (!t) {
-      return 0;
-    } else {
-      return max(height(t->left), height(t->right)) + 1;
-    }
-  }
-
-  int getBalanceFactor(AVLNode* t) const {
+  int getBalanceFactor(const node* t) const {
     if (!t) {
       return 0;
     }
 
-    return getHeight(t->left) - getHeight(t->right);
+    return height(t->left) - height(t->right);
   }
 
-  void rotateWithLeftChild(AVLNode*& t) {
-    AVLNode* tl = t->left;
+  // 左旋， LL型
+  node* rotateWithLeftChild(node* t) {
+    node* tl = t->left;
     t->left = tl->right;
     tl->right = t;
-    t->height = max(height(t->left), height(t->right)) + 1;
-    tl->height = max(height(tl->left), height(tl->right)) + 1;
-    t = tl;
+    t->height = std::max(height(t->left), height(t->right)) + 1;
+    tl->height = std::max(height(tl->left), height(tl->right)) + 1;
+    return tl;
   }
 
   /* 单旋转
@@ -57,13 +95,14 @@ class AVLTree {
    *        D             C   E
    *          E
    */
-  void rotateWithRightChild(AVLNode*& t) {
-    AVLNode* tr = t->right;
+  // 右旋， RR型
+  node* rotateWithRightChild(node* t) {
+    node* tr = t->right;
     t->right = tr->left;
     tr->left = t;
-    t->height = max(height(t->left), height(t->right)) + 1;
-    tr->height = max(height(tr->left), height(tr->right)) + 1;
-    t = tr;
+    t->height = std::max(height(t->left), height(t->right)) + 1;
+    tr->height = std::max(height(tr->left), height(tr->right)) + 1;
+    return tr;
   }
 
   /* 双旋转
@@ -72,72 +111,66 @@ class AVLTree {
    *  A   k2            A   B   C   D
    *    B   C             
    */
-  void doubleWithLeftChild(AVLNode*& t) {
-    rotateWithRightChild(t->left);
-    rotateWithLeftChild(t);
+  // LR型
+  node* doubleWithLeftChild(node* t) {
+    t->left = rotateWithRightChild(t->left);
+    return rotateWithLeftChild(t);
   }
 
-  void doubleWithRightChild(AVLNode*& t) {
-    rotateWithLeftChild(t->right);
-    rotateWithRightChild(t);
+  // RL型
+  node* doubleWithRightChild(node* t) {
+    t->right = rotateWithLeftChild(t->right);
+    return rotateWithRightChild(t);
   }
 
-  AVLNode* rebalance(AVLNode* root) {
-    int factor = getBalanceFactor(root);
+  node* rebalance(node* t) {
+    int factor = getBalanceFactor(t);
     if (factor > 1) {
-      if (getBalanceFactor(t->left) > 0) {
-        return ro
-      } else {
-
+      if (getBalanceFactor(t->left) > 0) {  // LL
+        return rotateWithLeftChild(t);
+      } else {  // LR
+        return doubleWithLeftChild(t);
       }
     } else if (factor < -1) {
-      if (getBalanceFactor(t->right) > 0) {
-
-      } else {
-
+      if (getBalanceFactor(t->right) > 0) { // RL
+        return doubleWithRightChild(t);
+      } else {  // RR
+        return rotateWithRightChild(t);
       }
     } else {
-      return root;
+      t->height = std::max(height(t->left), height(t->right)) + 1;
+      return t;
     }
   }
 
   // Internal method to insert into a subtree
   // set the new root of the subtree
-  void insert(T& x, AVLNode*& t) {
-    if (t == nullptr) {
-      t = new AVLNode(x, nullptr, nullptr);
-    } else if (x < t->val) {
-      insert(x, t->left);
-      if (height(t->left) - height(t->right) == 2) {
-        if (x < t->left->val) {
-          rotateWithLeftChild(t);
-        } else {
-          doubleWithLeftChild(t);
-        }
-      } else if (x > t->val) {
-        insert(x, t->right);
-        if(height(t->right) - height(t->left) == 2) {
-          if (t->right->val < x) {
-            rotateWithRightChild(t);
-          } else {
-            doubleWithRightChild(t);
-          }
-        } else {
-          // Dublicate, do nothing
-        }
-      }
+  node* insert(const T& x, node*& t) {
+    if (!t) {
+      t = new node(x, nullptr, nullptr, 0);
     }
 
-    t->height = max(height(t->left), height(t->right)) + 1;
+    if (x == t->val) {
+      return t;
+    } else if (x < t->val) {
+      insert(x, t->left);
+    } else {
+      insert(x, t->right);
+    }
+
+    return rebalance(t);
   }
 
-  T removeMin(SearchNode*& t) {
+  T removeMin(node*& t) {
+    // if t == nullptr
+
     if (!(t->left)) {
       T tmp = t->val;
       if (t->right) {
         t->val = t->right->val;
         delete t->right;
         t->right = nullptr;
+        t->height = 0;
       } else {
         delete t;
         t = nullptr;
@@ -149,7 +182,7 @@ class AVLTree {
     return removeMin(t->left);
   }
 
-  void remove(T& x, AVLNode* t) {
+  void remove(const T& x, node* t) {
     if (t == nullptr) {
       return;
     }
@@ -160,18 +193,84 @@ class AVLTree {
       remove(x, t->right);
     } else {
       if (t->right) {
-        t->val = removeMin(x, t->right);
-        if (height(t->left) - height(t->right) == 2) {
-          
-        }
+        t->val = removeMin(t->right);
       } else {
-        
+        node* tl = t->left;
+        t->left = tl->left;
+        t->val = tl->val;
+        delete tl;
       }
-
     }
+    rebalance(t);
+  }
+
+  bool contains(const T& x, node* t) const {
+    // 优先判断空树，保证t的有效性
+    if (!t) return false;
+  
+    if (x < t->val) {
+      return contains(x, t->right);
+    } else if(x > t->val) {
+      return contains(x, t->right);
+    } else {
+      // 最不可能的放最后
+      return true;
+    } 
+  }
+
+  node* findMax(node* t) const {
+    if (!t) return nullptr;
+
+    if(!(t->right)) {
+      return t;
+    }
+
+    return findMax(t->right);
+  }
+
+  node* findMin(node* t) const {
+    if (!t) return nullptr;
+
+    if (!(t->left)) {
+      return t;
+    }
+      
+    return findMin(t->left);
+  }
+
+  void printTree(node* t) const {
+    // 先序遍历，打印出来就是从小打到的数列
+    if (!t) {
+      return;
+    }
+
+    printTree(t->left);
+    std::cout << t->val << ":" << t->height << " ";
+    printTree(t->right);
+  }
+
+  void makeEmpty(node*& t) {
+    if (!t) return;
+
+    if (t->left) {
+      makeEmpty(t->left);
+    }
+
+    if (t->right) {
+      makeEmpty(t->right);
+    }
+
+    delete t;
+    t = nullptr;
+  }
+
+  node* clone(node* t) const {
+    if (!t) return nullptr;
+
+    return new node{t->val, clone(t->left), clone(t->right), 0};
   }
 
  private:
-  AVLNode* root;
+  node* root;
 };
 

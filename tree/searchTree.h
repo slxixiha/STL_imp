@@ -37,6 +37,7 @@ class BinarySearchTree {
   bool isEmpty() const {
     return !root;
   }
+
   void printTree() const {
     printTree(root);
     std::cout << std::endl;
