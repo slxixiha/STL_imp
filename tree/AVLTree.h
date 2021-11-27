@@ -41,8 +41,8 @@ class AVLTree {
     return maxNode->val;
   }
 
-  const node* insert(const T& x) {
-    return insert(x, root);
+  void insert(const T& x) {
+    insert(x, root);
   }
 
   void remove(const T& x) {
@@ -79,7 +79,12 @@ class AVLTree {
     return height(t->left) - height(t->right);
   }
 
-  // 左旋， LL型
+  /* 单旋转      
+   *      3      2
+   *    2   => 1   3
+   *  1        
+   */
+  // 右旋， LL型
   node* rotateWithLeftChild(node* t) {
     node* tl = t->left;
     t->left = tl->right;
@@ -90,12 +95,11 @@ class AVLTree {
   }
 
   /* 单旋转
-   *    B               B
-   *  A   C       =>  A     D
-   *        D             C   E
-   *          E
+   *  3       =>    4
+   *    4         3   5
+   *      5
    */
-  // 右旋， RR型
+  // 左旋， RR型
   node* rotateWithRightChild(node* t) {
     node* tr = t->right;
     t->right = tr->left;
@@ -106,10 +110,10 @@ class AVLTree {
   }
 
   /* 双旋转
-   *        k3                k2
-   *    k1      D   =>    k1      k3
-   *  A   k2            A   B   C   D
-   *    B   C             
+   *          5                 5            3   
+   *    2       6   =>      3     6   =>   2     5
+   *  1   3               2   4          1     4   6
+   *        4           1    
    */
   // LR型
   node* doubleWithLeftChild(node* t) {
@@ -117,6 +121,12 @@ class AVLTree {
     return rotateWithLeftChild(t);
   }
 
+  /* 双旋转
+   *    3                 3                  4
+   *  2       6         2   4              3     6
+   *      4     7   =>          6     => 2     5   7
+   *        5                 5   7
+   */
   // RL型
   node* doubleWithRightChild(node* t) {
     t->right = rotateWithLeftChild(t->right);
@@ -145,25 +155,23 @@ class AVLTree {
 
   // Internal method to insert into a subtree
   // set the new root of the subtree
-  node* insert(const T& x, node*& t) {
+  void insert(const T& x, node*& t) {
     if (!t) {
       t = new node(x, nullptr, nullptr, 0);
     }
 
     if (x == t->val) {
-      return t;
+      return;
     } else if (x < t->val) {
       insert(x, t->left);
     } else {
       insert(x, t->right);
     }
 
-    return rebalance(t);
+    t = rebalance(t);
   }
 
   T removeMin(node*& t) {
-    // if t == nullptr
-
     if (!(t->left)) {
       T tmp = t->val;
       if (t->right) {
@@ -182,7 +190,7 @@ class AVLTree {
     return removeMin(t->left);
   }
 
-  void remove(const T& x, node* t) {
+  void remove(const T& x, node*& t) {
     if (t == nullptr) {
       return;
     }
@@ -194,14 +202,20 @@ class AVLTree {
     } else {
       if (t->right) {
         t->val = removeMin(t->right);
+      } else if (t->left) {
+        // 左子树只有单个节点
+        t->val = t->left->val;
+        delete t->left;
+        t->left = nullptr;
+        t->height = 0;
+        return;
       } else {
-        node* tl = t->left;
-        t->left = tl->left;
-        t->val = tl->val;
-        delete tl;
+        delete t;
+        t = nullptr;
+        return;
       }
     }
-    rebalance(t);
+    t = rebalance(t);
   }
 
   bool contains(const T& x, node* t) const {
@@ -209,7 +223,7 @@ class AVLTree {
     if (!t) return false;
   
     if (x < t->val) {
-      return contains(x, t->right);
+      return contains(x, t->left);
     } else if(x > t->val) {
       return contains(x, t->right);
     } else {
